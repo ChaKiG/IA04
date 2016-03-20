@@ -1,12 +1,12 @@
 package Binaire;
 
 
-public class OperationValue {
+public class OperationResult {
 	private int value;
 	private String comment;
 	
-	OperationValue() {}
-	OperationValue(int value, String comment) {
+	OperationResult() {}
+	OperationResult(int value, String comment) {
 		this.value = value;
 		this.comment = comment;
 	}

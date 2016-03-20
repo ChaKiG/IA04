@@ -41,14 +41,18 @@ public class AgentReception  extends Agent{
 						}
 					} else {
 						int val = Integer.parseInt(mContent);
+						System.out.println("Valeur demandée : " + val);
 						addBehaviour(new AddValue(val, racine));
 					}
 				} else {
 					try {
+						// L'agent Reception créé l'agent Arbre
 						Object[] args = {Integer.parseInt(mContent)};
 						this.getAgent().getContainerController().createNewAgent("racine", "Binaire.AgentArbre",  args);
-						racine = new AID("racine", AID.ISLOCALNAME);
-						System.out.println("Valuer ajoutée : " + (int) args[0]);
+						this.getAgent().getContainerController().getAgent("racine").start();
+						racine = new AID("racine", AID.ISLOCALNAME); // Pour avoir comme attr racine, qui correspond Ã  la racine de l'arbre
+						
+						System.out.println("Valeur ajoutée pour la racine : " + (int) args[0]);
 					} catch (Exception e) {
 						System.out.println("erreur : " + e.getMessage());
 					}
@@ -78,12 +82,11 @@ public class AgentReception  extends Agent{
 			ACLMessage message = null;
 			ObjectMapper mapper = null;
 			switch (this.state) {
-			case 0:
+			case 0: // Demande
 				try {
-					System.out.print("addvalue :" + String.valueOf(val));
 					message = new ACLMessage(ACLMessage.REQUEST);
 					message.setConversationId(uniqueID);
-					OperationValue r = new OperationValue(val, "insert");
+					OperationResult r = new OperationResult(val, "insert");
 	
 					mapper = new ObjectMapper();
 					message.setContent(mapper.writeValueAsString(r));
@@ -94,19 +97,19 @@ public class AgentReception  extends Agent{
 					System.out.println("erreur :" + e.getMessage());
 				}
 				break;
-				case 1:
+				case 1: // Réponse
 					MessageTemplate mt = MessageTemplate.and(
 							MessageTemplate.MatchPerformative(ACLMessage.INFORM),
 							MessageTemplate.MatchConversationId(uniqueID));
 					message = receive(mt);
 					if (message != null) {
-						System.out.println(message.getContent());
+						System.out.println("Réception a reÃ§u la réponse : " + message.getContent());
 						state = 2;
 					}
 				break;
 			}
 		}
-		public boolean done() {
+		public boolean done() { // Terminé
 			return (state == 2);
 		}
 	}
@@ -129,12 +132,12 @@ public class AgentReception  extends Agent{
 			ACLMessage message = null;
 			ObjectMapper mapper = null;
 			switch (this.state) {
-			case 0:
+			case 0:	// Demande
 				try {
 					System.out.print("addvalue :" + String.valueOf(val));
 					message = new ACLMessage(ACLMessage.REQUEST);
 					message.setConversationId(uniqueID);
-					OperationValue r = new OperationValue(val, "check");
+					OperationResult r = new OperationResult(val, "check");
 	
 					mapper = new ObjectMapper();
 					message.setContent(mapper.writeValueAsString(r));
@@ -145,7 +148,7 @@ public class AgentReception  extends Agent{
 					System.out.println("erreur :" + e.getMessage());
 				}
 				break;
-			case 1:
+			case 1:	// Réponse
 				MessageTemplate mt = MessageTemplate.and(
 						MessageTemplate.MatchPerformative(ACLMessage.INFORM),
 						MessageTemplate.MatchConversationId(uniqueID));
@@ -157,7 +160,7 @@ public class AgentReception  extends Agent{
 				break;
 			}
 		}
-		public boolean done() {
+		public boolean done() { // Terminé
 			return (state == 2);
 		}
 	}
@@ -178,22 +181,22 @@ public class AgentReception  extends Agent{
 			ACLMessage message = null;
 			ObjectMapper mapper = null;
 			switch (this.state) {
-			case 0:
+			case 0:	// Demande
 				try {
 					System.out.print("show");
 					message = new ACLMessage(ACLMessage.REQUEST);
 					message.setConversationId(uniqueID);
-					OperationValue r = new OperationValue(0, "show");				
+					OperationResult r = new OperationResult(0, "show");				
 					mapper = new ObjectMapper();
 					message.setContent(mapper.writeValueAsString(r));
 					message.addReceiver(racine);
 					send(message);
 					state = 1;
 				} catch (JsonProcessingException e) {
-					System.out.println(e.getMessage());
+					System.out.println("Problèmes JSON" + e.getMessage());
 				}
 				break;
-			case 1:
+			case 1:	// Réponse
 				MessageTemplate mt = MessageTemplate.and(
 						MessageTemplate.MatchPerformative(ACLMessage.INFORM),
 						MessageTemplate.MatchConversationId(uniqueID));
@@ -206,7 +209,7 @@ public class AgentReception  extends Agent{
 			}
 		}
 
-		public boolean done() {
+		public boolean done() {	// Terminé
 			return (state == 2);
 		}
 	}
