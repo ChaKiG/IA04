@@ -1,10 +1,4 @@
 package Binaire;
-
-/*
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-*/
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jade.core.AID;
@@ -29,6 +23,7 @@ public class AgentArbre  extends Agent{
     	fils2 = null;
         addBehaviour(new Listen());
 	}
+	
 	
 	protected class Listen extends Behaviour {
 		private static final long serialVersionUID = 11L;
