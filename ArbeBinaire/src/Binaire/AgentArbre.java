@@ -12,8 +12,6 @@ import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.wrapper.ControllerException;
-import jade.wrapper.StaleProxyException;
 
 
 
@@ -27,6 +25,8 @@ public class AgentArbre  extends Agent{
 		System.out.println(getLocalName() + "--> installed");
 		Object[] args = getArguments();
         nodeValue = (int) args[0];
+    	fils1 = null;
+    	fils2 = null;
         addBehaviour(new Listen());
 	}
 	
@@ -42,10 +42,8 @@ public class AgentArbre  extends Agent{
 					OperationResult mes = m.readValue(message.getContent(), OperationResult.class);
 					String s = mes.getComment();
 					if (s.equals("show")) {
-						System.out.println("Show the tree");
 						addBehaviour(new Show(message.getConversationId(), message.getSender()));
 					} else if (s.equals("insert") || s.equals("check")) {
-						System.out.println("Insert or check the tree");
 						addBehaviour(new Value(mes.getValue(), s, message.getConversationId(), message.getSender()));
 					}
 				} catch (Exception e) {
@@ -80,109 +78,64 @@ public class AgentArbre  extends Agent{
 			switch (this.state) {
 			case 0:
 				if (nodeValue == value) {
-					if (operation.equals("check")) {
-						// Envoie true au père 
+					message = new ACLMessage(ACLMessage.INFORM);
+					message.setConversationId(UniqueID);
+					message.addReceiver(reply);
+					if (operation.equals("check")) {  // Envoie true au père 
+						message.setContent("true");	
+					} else if (operation.equals("insert")) { // Envoie false au père 
+						message.setContent("false");
+					}
+					send(message);
+					state = 2;
+				} else if ((fils1 != null && value < nodeValue) || (fils2 != null && value > nodeValue)) { 
+					try {
+						message = new ACLMessage(ACLMessage.REQUEST);
+						message.setConversationId(UniqueID);
+						mapper = new ObjectMapper();
+						message.setContent(mapper.writeValueAsString(new OperationResult(value, operation)));
+						if (value < nodeValue) {
+							message.addReceiver(fils1);
+							System.out.println("On envoie la demande au fils gauche :" + String.valueOf(value) + " < " + String.valueOf(nodeValue));
+						} else {
+							message.addReceiver(fils2);								
+							System.out.println("On envoie la demande au fils droit :" + String.valueOf(value) + " < " + String.valueOf(nodeValue));
+						}
+						send(message);
+						state = 1;
+					} catch (Exception e) {
+						System.out.println("Mauvais message reçu : " + message.getContent());
+					}
+				} else {	// Le fils n'est pas créé
+					if (operation.equals("insert")) {
+						Object[] args = {value};
+						String agentName = String.valueOf(value); // On doit leur valeur comme nom aux agents
+						try {
+							this.getAgent().getContainerController().createNewAgent(agentName, "Binaire.AgentArbre",  args);
+							this.getAgent().getContainerController().getAgent(agentName).start();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						if (value < nodeValue) {   // On créé le fils gauche
+							fils1 = new AID(agentName, AID.ISLOCALNAME);
+						} else {  // On créé le fils droit
+							fils2 = new AID(agentName, AID.ISLOCALNAME);
+							System.out.println("Valeur ajoutée dans le fils droit : " + (int) args[0]);								
+						}
+						// Envoie de true au père (on a bien inséré)
 						message = new ACLMessage(ACLMessage.INFORM);
 						message.setConversationId(UniqueID);
 						message.setContent("true");
 						message.addReceiver(reply);
 						send(message);
-						
-					} else if (operation.equals("insert")) {
-						// Envoie false au père 
+						state = 1;
+					} else {
 						message = new ACLMessage(ACLMessage.INFORM);
 						message.setConversationId(UniqueID);
 						message.setContent("false");
 						message.addReceiver(reply);
-						send(message);
-						
-					}
-				} else {
-					if (fils1 != null && value < nodeValue) {
-						// Envoi d'une demande au fils Gauche 
-						System.out.println("On envoie la demande au fils gauche :" + String.valueOf(value) + " < " + String.valueOf(nodeValue));
-						try {
-							message = new ACLMessage(ACLMessage.REQUEST);
-							message.setConversationId(UniqueID);
-
-							OperationResult r = new OperationResult(value, operation);
-							mapper = new ObjectMapper();
-							message.setContent(mapper.writeValueAsString(r));
-							message.addReceiver(fils1);
-							send(message);
-							state = 1;
-						} catch (Exception e) {
-							System.out.println("Mauvais message reÃ§u : " + message.getContent());
-						}
-					} else if (fils2 != null && value > nodeValue) {
-						// Envoi d'une demande au fils Droit 
-						System.out.println("On envoie la demande au fils droit :" + String.valueOf(value) + " > " + String.valueOf(nodeValue));
-						try {
-							message = new ACLMessage(ACLMessage.REQUEST);
-							message.setConversationId(UniqueID);
-	
-							OperationResult r = new OperationResult(value, operation);
-							mapper = new ObjectMapper();
-
-							message.setContent(mapper.writeValueAsString(r));
-							message.addReceiver(fils2);
-							send(message);
-							state = 1;
-						} catch (Exception e) {
-							System.out.println("Mauvais message reÃ§u : " + message.getContent());
-						}
-					} else {	// Le fils n'est pas créé
-						if (operation.equals("insert")) {
-							if (value < nodeValue) {
-								// On crée le fils gauche
-								Object[] args = {value};
-								String agentName = String.valueOf(value); // On doit leur valeur comme nom aux agents
-								try {
-									this.getAgent().getContainerController().createNewAgent(agentName, "AgentArbre",  args);
-									this.getAgent().getContainerController().getAgent(agentName).start();
-									fils1 = new AID(agentName, AID.ISLOCALNAME);
-								} catch (StaleProxyException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								} catch (ControllerException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								System.out.println("Valeur ajoutée dans le fils gauche : " + (int) args[0]);
-								
-							} else {
-								// On créé le fils droit
-								Object[] args = {value};
-								String agentName = String.valueOf(value);
-								try {
-									this.getAgent().getContainerController().createNewAgent(agentName, "AgentArbre",  args);
-									this.getAgent().getContainerController().getAgent(agentName).start();
-									fils2 = new AID(agentName, AID.ISLOCALNAME);
-								} catch (StaleProxyException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								} catch (ControllerException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								System.out.println("Valeur ajoutée dans le fils droit : " + (int) args[0]);
-								
-							}
-							// Envoie de true au père (on a bien inséré)
-							message = new ACLMessage(ACLMessage.INFORM);
-							message.setConversationId(UniqueID);
-							message.setContent("true");
-							message.addReceiver(reply);
-							send(message);
-							state = 1;
-						} else {
-							message = new ACLMessage(ACLMessage.INFORM);
-							message.setConversationId(UniqueID);
-							message.setContent("false");
-							message.addReceiver(reply);
-							send(message); 
-							state = 1;
-						}
+						send(message); 
+						state = 1;
 					}
 				}
 				break;
@@ -213,18 +166,73 @@ public class AgentArbre  extends Agent{
 		private static final long serialVersionUID = 13L;
 		private String UniqueID;
 		private AID reply;
+		private int state;
+		private String respTextGauche;
+		private String respTextDroit;
 		
 		public Show(String UniqueID, AID reply) {
 			this.UniqueID = UniqueID;
 			this.reply = reply;
+			respTextGauche = "";
+			respTextDroit = "";
+			state = 0;
 		}
 		
 		public void action() {
-			System.out.println("AID : " + reply.getName() + ",  ID : " +UniqueID);
+			ACLMessage message = null;
+			System.out.println(state);
+			if (state == 0) {
+				if (fils1 != null || fils2 != null) {
+					try {
+						System.out.println("AID : " + reply.getName() + ",  ID : " +UniqueID);
+						message = new ACLMessage(ACLMessage.REQUEST);
+						message.setConversationId(UniqueID);
+						ObjectMapper mapper = new ObjectMapper();
+						message.setContent(mapper.writeValueAsString(new OperationResult(0, "show")));
+						if (fils1 != null)
+							message.addReceiver(fils1);
+						else 
+							state++;
+						if (fils2 != null) 
+							message.addReceiver(fils2);
+						else 
+							state++;
+						send(message);
+						state++;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else
+					state = 3;
+			}
+			if ( state > 0 && state < 3) {
+				System.out.println(state);
+				MessageTemplate mt = MessageTemplate.and(
+						MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+						MessageTemplate.MatchConversationId(UniqueID));
+				message = receive(mt);
+				if (message != null) {
+					if (message.getSender().equals(fils1)) {
+						respTextGauche = message.getContent();
+					} else {
+						respTextDroit = message.getContent();
+					}
+					state++;
+				}
+			}
+			if (state == 3) {
+				System.out.println(state);
+				message = new ACLMessage(ACLMessage.INFORM);
+				message.setContent("(" + String.valueOf(nodeValue) + " " + respTextGauche + " " + respTextDroit + ")");
+				message.addReceiver(reply);
+				message.setConversationId(UniqueID);
+				send(message);
+				state = 4;
+			}
 		}
 
 		public boolean done() {
-			return false;
+			return (state == 4);
 		}
 	}
 }

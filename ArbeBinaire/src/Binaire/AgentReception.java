@@ -47,10 +47,11 @@ public class AgentReception  extends Agent{
 				} else {
 					try {
 						// L'agent Reception créé l'agent Arbre
-						Object[] args = {Integer.parseInt(mContent)};
-						this.getAgent().getContainerController().createNewAgent("racine", "Binaire.AgentArbre",  args);
-						this.getAgent().getContainerController().getAgent("racine").start();
-						racine = new AID("racine", AID.ISLOCALNAME); // Pour avoir comme attr racine, qui correspond Ã  la racine de l'arbre
+						int val = Integer.parseInt(mContent);
+						Object[] args = {val};
+						this.getAgent().getContainerController().createNewAgent("racine(" + String.valueOf(val) + ")", "Binaire.AgentArbre",  args);
+						this.getAgent().getContainerController().getAgent("racine(" + String.valueOf(val) + ")").start();
+						racine = new AID("racine(" + String.valueOf(val) + ")", AID.ISLOCALNAME); // Pour avoir comme attr racine, qui correspond Ã  la racine de l'arbre
 						
 						System.out.println("Valeur ajoutée pour la racine : " + (int) args[0]);
 					} catch (Exception e) {
@@ -103,7 +104,7 @@ public class AgentReception  extends Agent{
 							MessageTemplate.MatchConversationId(uniqueID));
 					message = receive(mt);
 					if (message != null) {
-						System.out.println("Réception a reÃ§u la réponse : " + message.getContent());
+						System.out.println("Réception a reçu la réponse : " + message.getContent());
 						state = 2;
 					}
 				break;
@@ -134,7 +135,6 @@ public class AgentReception  extends Agent{
 			switch (this.state) {
 			case 0:	// Demande
 				try {
-					System.out.print("addvalue :" + String.valueOf(val));
 					message = new ACLMessage(ACLMessage.REQUEST);
 					message.setConversationId(uniqueID);
 					OperationResult r = new OperationResult(val, "check");
@@ -154,7 +154,7 @@ public class AgentReception  extends Agent{
 						MessageTemplate.MatchConversationId(uniqueID));
 				message = receive(mt);
 				if (message != null) {
-					System.out.println(message.getContent());
+					System.out.println("réponse add/check :" + message.getContent());
 					state = 2;
 				}
 				break;
@@ -202,7 +202,7 @@ public class AgentReception  extends Agent{
 						MessageTemplate.MatchConversationId(uniqueID));
 				message = receive(mt);
 				if (message != null) {
-					System.out.println(message.getContent());
+					System.out.println("show response : " + message.getContent());
 					state = 2;
 				}
 				break;
