@@ -19,6 +19,24 @@ public class AgentReception  extends Agent{
 	protected void setup() {
 		System.out.println(getLocalName() + "--> installed");
 		addBehaviour(new Listen());
+		
+		
+		ACLMessage m = new ACLMessage(ACLMessage.REQUEST);
+		m.setContent("10");
+		m.addReceiver(new AID("recep", AID.ISLOCALNAME));
+		send(m);
+		m.setContent("10");
+		send(m);
+		m.setContent("20");
+		send(m);
+		m.setContent("40");
+		send(m);
+		m.setContent("30");
+		send(m);
+		m.setContent("25");
+		send(m);
+		m.setContent("60");
+		send(m);
 	}
 	
 	protected class Listen extends Behaviour {

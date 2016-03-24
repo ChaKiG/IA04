@@ -223,7 +223,7 @@ public class AgentArbre  extends Agent{
 			if (state == 3) {
 				System.out.println(state);
 				message = new ACLMessage(ACLMessage.INFORM);
-				message.setContent("(" + String.valueOf(nodeValue) + " " + respTextGauche + " " + respTextDroit + ")");
+				message.setContent("(" + String.valueOf(nodeValue) + "(" + respTextGauche + ")(" + respTextDroit + "))");
 				message.addReceiver(reply);
 				message.setConversationId(UniqueID);
 				send(message);
