@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 import jade.core.AID;
@@ -13,6 +14,7 @@ public class Simulation extends Agent {
 	
 	public void setup() {
 		System.out.println(getLocalName() + "--> installed");
+		subscribed = new ArrayList<AID>();
 		addBehaviour(new Listen());
 	}
 	
@@ -31,7 +33,6 @@ public class Simulation extends Agent {
 					/*  RECOIS LES SUBSCRIBE   */
 					MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.SUBSCRIBE);
 					while ((message = receive(mt)) != null) {
-						System.out.println("subscribed :" + message.getSender().getName());
 						subscribed.add(message.getSender());
 					}
 				}
@@ -53,9 +54,11 @@ public class Simulation extends Agent {
 	
 	public class Tick extends TickerBehaviour {
 		private static final long serialVersionUID = 12L;
-
+		private AID EnvironnementAid;
+		
 		public Tick(Agent a, long period) {
 			super(a, period);
+			EnvironnementAid = new AID("environnement", AID.ISLOCALNAME);
 		}
 		
 		protected void onTick() {
@@ -64,15 +67,16 @@ public class Simulation extends Agent {
 			ACLMessage message = receive(mt);
 			if ( message != null && message.getContent().equals("Fini"))
 				this.getAgent().doDelete();
-			else {
+			else if (EnvironnementAid != null ){
 				for (int i = 0 ; i < subscribed.size() ; i++) {
-					message = new ACLMessage(ACLMessage.REQUEST);
+					message = new ACLMessage(ACLMessage.PROPAGATE);
 					message.setContent(String.valueOf(i));
-					message.addReceiver(new AID("environnement", AID.ISLOCALNAME));
+					message.addReceiver(EnvironnementAid);
 					message.addReplyTo(subscribed.get(i));
 					send(message);
 				}
-			}			
+			} else
+				EnvironnementAid = new AID("environnement", AID.ISLOCALNAME);
 		}
 	}
 }

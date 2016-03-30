@@ -12,8 +12,13 @@ public class Cellule {
 			possible.add(i);
 	}
 	public Cellule(int val) {
-		value = val;
 		possible = new ArrayList<Integer>();
+		if (val <= 0) {
+			value = 0;
+			for (int i=1; i<10; i++)
+				possible.add(i);
+		} else
+			value = val;
 	}
 	public Cellule(List<Integer> possibleValues) {
 		value = 0;
@@ -26,6 +31,28 @@ public class Cellule {
 	public int getValue() {
 		return value;
 	}
+	
+	public void setValue(int val) {
+		value = val;
+	}
+	
+	public void setPossible(List<Integer> poss) {
+		possible = poss;
+	}
+	
+	public void removePossible(int val) {
+		int index = possible.indexOf(val);
+		if (index > -1)
+			possible.remove(index);
+		if (possible.size() == 1) {
+			value = possible.get(0);
+			possible.clear();
+		}
+	}
+	
+	
+	
+	
 	
 	public void reviewPossible(List<Integer> val) {
 		int l = possible.size(),

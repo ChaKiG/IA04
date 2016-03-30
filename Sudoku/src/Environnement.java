@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,10 +10,10 @@ import jade.lang.acl.MessageTemplate;
 
 public class Environnement extends Agent {
 	private static final long serialVersionUID = 3L;
-	private Cellule[][] sudoku;
+	private Sudoku sudoku;
 	
 	public void setup() {
-		sudoku = new Cellule[9][9];
+		sudoku = new Sudoku();
 		this.addBehaviour(new Listen());
 		for (int i=0; i<27; i++) {
 			try {
@@ -25,38 +24,25 @@ public class Environnement extends Agent {
 			}
 		}
 	}
-
-	protected List<Cellule> getCellules(int group) {
-		List<Cellule> l = new ArrayList<Cellule>();
-		if (group < 9) {
-			for (int i=0; i<9; i++)
-				l.add(sudoku[group][i]);
-		} else if (group < 18) {
-			for (int i=0; i<9; i++)
-				l.add(sudoku[i][group]);
-		} else if (group < 27) {
-			int line = (group - 18)/3;
-			int col = (group - 18)%3;
-			for(int i=0; i<3; i++)
-				for(int j=0; j<3; j++) {
-					l.add(sudoku[line+i][col+j]);
-				}
-		}
-		return l;
-	}
+	
+	
 	
 	public class Listen extends Behaviour {
 		private static final long serialVersionUID = 31L;
 
 		public void action() {
 			ACLMessage message = null;
-			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.PROPAGATE);
 			while ( (message = receive(mt)) != null) {
 				int group = Integer.parseInt(message.getContent());
 				AID agent = (AID) message.getAllReplyTo().next();
 				String id = UUID.randomUUID().toString();
 				
 				this.getAgent().addBehaviour(new getAnalyse(group, agent, id));
+			}
+			mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+			if ( (message = receive(mt)) != null) {
+				sudoku.show();
 			}
 		}
 
@@ -86,7 +72,7 @@ public class Environnement extends Agent {
 				try {
 					message = new ACLMessage(ACLMessage.REQUEST);
 					message.addReceiver(analyste);
-					message.setContent(new ObjectMapper().writeValueAsString(getCellules(group)));
+					message.setContent(new ObjectMapper().writeValueAsString(sudoku.getCellules(group)));
 					send(message);
 					state++;
 				} catch (Exception e) {
@@ -101,9 +87,7 @@ public class Environnement extends Agent {
 					try {
 						ObjectMapper mapper = new ObjectMapper();
 						List<Cellule> cellules = mapper.readValue(message.getContent(), mapper.getTypeFactory().constructCollectionType(List.class, Cellule.class));
-						for (int i=0; i<9; i++) {
-							   getCellules(group).get(i).reviewPossible(cellules.get(i).getPossible());
-						}
+						sudoku.setCellules(group, cellules);
 						state++;
 					} catch (Exception e) {
 						e.printStackTrace();
