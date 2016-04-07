@@ -82,13 +82,11 @@ public class Analyse extends Agent {
 					//  Recherche d'un doublon de valeurs n'aparaissant que dans DEUX cellules
 					List<Integer> cells = new ArrayList<Integer>();
 					for (int i=1; i<10; i++) {
-						for (int j=1; j<10; j++) {
-							if (i != j) {
-								for (int k=0; k<9; k++) {
-									List<Integer> l = cellules.get(k).getPossible();
-									if (l.size() == 2 && l.contains(i) && l.contains(j)) {
-										cells.add(k);
-									}
+						for (int j=i+1; j<10; j++) {
+							for (int k=0; k<9; k++) {
+								List<Integer> l = cellules.get(k).getPossible();
+								if (l.size() == 2 && l.contains(i) && l.contains(j)) {
+									cells.add(k);
 								}
 							}
 							//   Retrait des valeurs trouvées en doublon   
@@ -105,8 +103,6 @@ public class Analyse extends Agent {
 							cells.clear();
 						}
 					}
-					
-					
 					
 					message = message.createReply();
 					message.setPerformative(ACLMessage.INFORM);
