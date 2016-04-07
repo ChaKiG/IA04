@@ -13,7 +13,7 @@ public class Simulation extends Agent {
 	private List<AID> subscribed;
 	
 	public void setup() {
-		System.out.println(getLocalName() + "--> installed");
+		//System.out.println(getLocalName() + "--> installed");
 		subscribed = new ArrayList<AID>();
 		addBehaviour(new Listen());
 	}
@@ -62,6 +62,7 @@ public class Simulation extends Agent {
 		}
 		
 		protected void onTick() {
+			
 			/*    ENVOI LES DEMANDES DE TICKER  */
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
 			ACLMessage message = receive(mt);

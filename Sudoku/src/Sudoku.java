@@ -17,32 +17,41 @@ public class Sudoku {
 		    reader = new BufferedReader(new FileReader(file));
 		    String text = null;
 
-		    for (int j=0; j<9; j++) {
+		    for (int i=0; i<9; i++) {
 		    	text = reader.readLine();
-		    	for (int i=0; i<text.length(); i++) {
-		    		sudoku[i][j] = new Cellule(Character.getNumericValue(text.charAt(i)));
+		    	for (int j=0; j<text.length(); j++) {
+		    		sudoku[i][j] = new Cellule(Character.getNumericValue(text.charAt(j)));
 		    	}
 		    }
+		    show(false);
 		} catch (Exception e) {
-		    e.printStackTrace();
+		    System.out.println(e.getMessage());
 		} finally {
 			if (reader != null) {
 			    try {
 					reader.close();
 				} catch (Exception e) {
-					e.printStackTrace();
+				    System.out.println(e.getMessage());
 				}
 			}
 		}
-	    show();
 	}
 	
-	public void show() {
+	public void show(boolean detailed) {
+		System.out.println();
+		System.out.println();
+		
 	    for (int j=0; j<9; j++) {
 	    	for (int i=0; i<9; i++) {
-	    		System.out.print(sudoku[i][j].getValue());
+	    		if (detailed) {
+	    			System.out.println("[" + j + "][" + i + "]" + sudoku[i][j].getValue() + "-" +sudoku[i][j].getPossible());
+	    		} else {
+	    			System.out.print(sudoku[i][j].getValue() + "  ");
+	    		}
+    		}
+	    	if (!detailed) {
+	    		System.out.println();
 	    	}
-	    	System.out.println();
 	    }		
 	}
 	
@@ -61,7 +70,7 @@ public class Sudoku {
 			int col = (group - 18)%3;
 			for(int i=0; i<3; i++)
 				for(int j=0; j<3; j++) {
-					l.add(sudoku[line+i][col+j]);
+					l.add(sudoku[3*line+i][3*col+j]);
 				}
 		}
 		return l;
@@ -69,8 +78,8 @@ public class Sudoku {
 	protected void setCellules(int group, List<Cellule> cells) {
 		List<Cellule> l = getCellules(group);
 		for (int i=0; i<9; i++) {
-			if (cells.get(i).getValue() != 0)
-				l.get(i).setValue(cells.get(i).getValue());
+			if (cells.get(i).getValue() > 0)
+				l.get(i).defineValue(cells.get(i).getValue());
 			else
 				l.get(i).reviewPossible(cells.get(i).getPossible());
 		}

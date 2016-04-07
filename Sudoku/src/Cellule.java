@@ -17,57 +17,31 @@ public class Cellule {
 			value = 0;
 			for (int i=1; i<10; i++)
 				possible.add(i);
-		} else
+		} else {
 			value = val;
+		}
 	}
 	public Cellule(List<Integer> possibleValues) {
 		value = 0;
-		possible = possibleValues;
+		possible = new ArrayList<Integer>(possibleValues);
 	}
 	
-	public List<Integer> getPossible() {
-		return possible;
-	}
-	public int getValue() {
-		return value;
-	}
-	
-	public void setValue(int val) {
-		value = val;
-	}
-	
-	public void setPossible(List<Integer> poss) {
-		possible = poss;
-	}
+	public int getValue() {return value;}
+	public void setValue(int val) {value = val;}
+	public List<Integer> getPossible() {return new ArrayList<Integer>(possible);}
+	public void setPossible(List<Integer> poss) {possible = new ArrayList<Integer>(poss);}
 	
 	public void removePossible(int val) {
-		int index = possible.indexOf(val);
-		if (index > -1)
-			possible.remove(index);
-		if (possible.size() == 1) {
-			value = possible.get(0);
-			possible.clear();
-		}
+		possible.remove((Integer)val);
 	}
 	
 	
-	
-	
-	
+	public void defineValue(int val) {
+		value = val;
+		possible.clear();
+	}
 	public void reviewPossible(List<Integer> val) {
-		int l = possible.size(),
-			i = 0;
-		while (i < l) {
-			if (!val.contains(possible.get(i))) {
-				possible.remove(i);
-				l--;
-			} else
-				i++;
-		}
-		if (possible.size() == 1) {
-			value = possible.get(0);
-			possible.clear();
-		}
+		possible.retainAll(val);
 	}
-	
+
 }

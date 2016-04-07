@@ -16,6 +16,11 @@ public class Environnement extends Agent {
 		sudoku = new Sudoku();
 		this.addBehaviour(new Listen());
 		for (int i=0; i<27; i++) {
+			List<Cellule> ce = sudoku.getCellules(i);
+			System.out.print("group : " + i + "---");
+			for (Cellule c : ce)
+				System.out.print(c.getValue() + " ");
+			System.out.println();
 			try {
 				this.getContainerController().createNewAgent("analyste"+String.valueOf(i), "Analyse", null);
 				this.getContainerController().getAgent("analyste"+String.valueOf(i)).start();
@@ -42,7 +47,10 @@ public class Environnement extends Agent {
 			}
 			mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
 			if ( (message = receive(mt)) != null) {
-				sudoku.show();
+				if (message.getContent() != null)
+					sudoku.show(true);
+				else
+					sudoku.show(false);
 			}
 		}
 
@@ -73,8 +81,9 @@ public class Environnement extends Agent {
 					message = new ACLMessage(ACLMessage.REQUEST);
 					message.addReceiver(analyste);
 					message.setContent(new ObjectMapper().writeValueAsString(sudoku.getCellules(group)));
+					message.setConversationId(UniqueID);
 					send(message);
-					state++;
+					state = 1;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
