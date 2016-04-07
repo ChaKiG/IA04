@@ -10,7 +10,7 @@ public class Sudoku {
 	public Sudoku() {
 		sudoku = new Cellule[9][9];
 
-		File file = new File("SUDOKU");
+		File file = new File("SUDOKU_5");
 		BufferedReader reader = null;
 
 		try {
@@ -84,4 +84,39 @@ public class Sudoku {
 				l.get(i).reviewPossible(cells.get(i).getPossible());
 		}
 	}
+	
+	
+	public int isEnded() {
+		for (int i=0; i<9; i++) {
+			for (int j=0; j<9; j++) {
+				if (sudoku[i][j].getValue() == 0)
+					return 0;
+			}
+		}
+		return 1;
+	}
+	
+	public int isCorrect() {
+		List<Integer> found = new ArrayList<Integer>();
+		for (int i=0; i<9; i++) {
+			for (int j=0; j<9; j++) {
+				if (found.contains(sudoku[i][j].getValue()))
+					return 0;
+				else
+					found.add(sudoku[i][j].getValue());
+			}
+			found.clear();
+		}
+		for (int i=0; i<9; i++) {
+			for (int j=0; j<9; j++) {
+				if (found.contains(sudoku[j][i].getValue()))
+					return 0;
+				else
+					found.add(sudoku[j][i].getValue());
+			}
+			found.clear();
+		}
+		return 1;
+	}
+	
 }

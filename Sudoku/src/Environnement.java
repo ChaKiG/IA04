@@ -94,9 +94,23 @@ public class Environnement extends Agent {
 						MessageTemplate.MatchConversationId(UniqueID));
 				if ((message = receive(mt)) != null) {
 					try {
-						ObjectMapper mapper = new ObjectMapper();
-						List<Cellule> cellules = mapper.readValue(message.getContent(), mapper.getTypeFactory().constructCollectionType(List.class, Cellule.class));
-						sudoku.setCellules(group, cellules);
+						if (sudoku.isEnded() == 0) {
+							ObjectMapper mapper = new ObjectMapper();
+							List<Cellule> cellules = mapper.readValue(message.getContent(), mapper.getTypeFactory().constructCollectionType(List.class, Cellule.class));
+							sudoku.setCellules(group, cellules);
+							if (sudoku.isEnded() == 1) {
+								/* Envoyer "fini" */
+								ACLMessage m = new ACLMessage(ACLMessage.INFORM);
+								m.addReceiver(new AID("simulation", AID.ISLOCALNAME));
+								m.setContent("Fini");
+								send(m);
+								sudoku.show(false);
+								if (sudoku.isCorrect() == 1)
+									System.out.println("Sudoku OK");
+								else
+									System.out.println("Erreur");
+							}
+						}
 						state++;
 					} catch (Exception e) {
 						e.printStackTrace();

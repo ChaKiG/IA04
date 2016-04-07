@@ -43,5 +43,13 @@ public class Cellule {
 	public void reviewPossible(List<Integer> val) {
 		possible.retainAll(val);
 	}
+	
+	public void show() {
+		System.out.print("val:" + value + "    - ");
+		for (int i : possible) {
+			System.out.print(" - " + i);
+		}
+		System.out.println();
+	}
 
 }

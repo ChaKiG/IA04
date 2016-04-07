@@ -53,14 +53,15 @@ public class Analyse extends Agent {
 					}
 					
 					
-					// Reherche des valeurs non encore définies
-					/*List<Integer> notDefined = new ArrayList<Integer>();
+					// Recherche des valeurs non encore définies
+					List<Integer> notDefined = new ArrayList<Integer>();
+					for (int i=1; i<10; i++)
+						notDefined.add(i);
 					for (Cellule c : cellules) {
 						if (c.getValue() > 0)
-							notDefined.add(c.getValue());
+							notDefined.remove((Integer)c.getValue());
 					}
-					
-					//  Recherche des valeurs non trouvées n'aparaissant que dans UNE cellule					
+					//  Recherche des valeurs non encore définies n'aparaissant QUE dans UNE cellule					
 					for (int i : notDefined) {
 						int cell = 0;
 						int nb = 0;
@@ -76,15 +77,15 @@ public class Analyse extends Agent {
 						if (nb == 1) {
 							cellules.get(cell).defineValue(i);
 						}
-					}*/
+					}
 					
-					//  Recherche d'un doublon de valeurs n'aparaissant que dans DEUX cellules 
-					/*  NON ENCORE FONCTIONNEL 
+					//  Recherche d'un doublon de valeurs n'aparaissant que dans DEUX cellules
 					for (int i=1; i<6; i++) {
 						for (int j=6; j<10; j++) {
+							List<Integer> cells = new ArrayList<Integer>();
 							for (int k=0; k<9; k++) {
 								List<Integer> l = cellules.get(k).getPossible();
-								if (l.contains(i) && l.contains(j)) {
+								if (l.size() == 2 && l.contains(i) && l.contains(j)) {
 									cells.add(k);
 								}
 							}
@@ -92,6 +93,13 @@ public class Analyse extends Agent {
 							if (cells.size() == 2) {
 								int cell1 = cells.get(0);
 								int cell2 = cells.get(1);
+								/*System.out.println("i: " + i + " -- j: " + j);
+								System.out.println("cell 1: " + cell1 );
+								System.out.println("cell 2: " + cell2 );
+								for (int k=0; k<9; k++)
+									cellules.get(k).show();
+								*/
+								
 								List<Integer> values = new ArrayList<Integer>();
 								values.add(i);
 								values.add(j);
@@ -106,7 +114,10 @@ public class Analyse extends Agent {
 								}
 							}
 						}
-					}*/
+					}
+					
+					
+					
 					message = message.createReply();
 					message.setPerformative(ACLMessage.INFORM);
 					message.setContent(new ObjectMapper().writeValueAsString(cellules));

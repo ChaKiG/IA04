@@ -37,7 +37,7 @@ public class Simulation extends Agent {
 					}
 				}
 				if (subscribed.size() >= 27) {
-					this.getAgent().addBehaviour(new Tick(this.getAgent(), 5000));
+					this.getAgent().addBehaviour(new Tick(this.getAgent(), 2000));
 					state = 1;
 				}
 			}
@@ -46,8 +46,6 @@ public class Simulation extends Agent {
 		public boolean done() {
 			return (state == 1);
 		}
-		
-		
 		
 		
 	}
