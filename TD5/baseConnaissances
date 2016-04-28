@@ -1,0 +1,35 @@
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix wot:     <http://xmlns.com/wot/0.1/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix td5:	 <http://www.utc.fr/> .
+
+td5:UTC a foaf:Organization.
+
+td5:Jean a foaf:Person;
+	foaf:firstName "Jean".
+td5:Arthur a foaf:Person;
+	foaf:firstName "Arthur".
+td5:Sarah a foaf:Person;
+	foaf:firstName "Sarah".
+td5:Clarisse a foaf:Person;
+	foaf:firstName "Clarisse".
+td5:Jeoffrey a foaf:Person;
+	foaf:firstName "Jeoffrey".
+td5:Jeanne a foaf:Person;
+	foaf:firstName "Jeanne".
+td5:Thomas a foaf:Person;
+	foaf:firstName "Thomas".
+
+td5:Jeoffrey foaf:knows td5:Clarisse.
+td5:Sarah foaf:knows td5:Thomas.
+td5:Jeanne foaf:knows td5:_Jean.
+td5:Thomas foaf:knows td5:Clarisse,
+					td5:Sarah.
+
+td5:Sarah foaf:topic_interest td5:UTC.
+td5:Thomas foaf:topic_interest td5:UTC.
+td5:Clarisse foaf:topic_interest td5:Thomas.
