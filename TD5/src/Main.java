@@ -2,6 +2,7 @@ import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
+import jade.wrapper.AgentController;
 
 public class Main {
 	
@@ -9,13 +10,13 @@ public class Main {
 		/*
 		// Etape 1
 		BaseConnaissances b = new BaseConnaissances();
-		//Recherche d'une entité
+		//Recherche d'une entitï¿½
 		b.runSelectQuery("requestPersonName");
 		//Recherche des classes
 		b.runSelectQuery("requestClass");
-		//Recherche des propriétés
+		//Recherche des propriï¿½tï¿½s
 		b.runSelectQuery("requestProperty");
-		//Recherche des propriétés
+		//Recherche des propriï¿½tï¿½s
 		b.runSelectQuery("requestDomain");		
 		
 		//Etape 2
@@ -34,7 +35,10 @@ public class Main {
 			rt.createMainContainer(p_main);
 			
 			AgentContainer ac = rt.createAgentContainer(p_sec);
-			ac.createNewAgent("KB",  "KB",  null).start();
+			AgentController kb = ac.createNewAgent("KB", "KB", null);
+			AgentController propag = ac.createNewAgent("PropagateSparql", "PropagateSparql", null);
+			kb.start();
+			propag.start();
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
