@@ -14,6 +14,9 @@ public class SparqlRequest {
 		defaultHeaders.add("PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>");
 		defaultHeaders.add("PREFIX vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#>");
 		defaultHeaders.add("PREFIX geo:     <http://linkedgeodata.org/triplify/>");
+		defaultHeaders.add("PREFIX rdfs: 	<http://www.w3.org/2000/01/rdf-schema#> ");
+		defaultHeaders.add("PREFIX lgd:  	<http://linkedgeodata.org/> ");
+		defaultHeaders.add("PREFIX lgdo: <http://linkedgeodata.org/ontology/> ");
 		defaultHeaders.add("PREFIX td5:	 	<http://www.utc.fr/>");
 	}
 	

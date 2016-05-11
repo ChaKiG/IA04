@@ -34,10 +34,14 @@ public class Main {
 			rt.createMainContainer(p_main);
 			
 			AgentContainer ac = rt.createAgentContainer(p_sec);
-			AgentController kb = ac.createNewAgent("KB", "KB", null);
-			AgentController propag = ac.createNewAgent("PropagateSparql", "PropagateSparql", null);
-			kb.start();
-			propag.start();
+			AgentController KB = ac.createNewAgent("KB", "KB", null);
+			AgentController propagKB = ac.createNewAgent("PropagateSparql", "PropagateSparql", null);
+			AgentController GA = ac.createNewAgent("GeodataAgent", "GeodataAgent", null);
+			AgentController propagGA = ac.createNewAgent("PropagateGeoSparql", "PropagateGeoSparql", null);
+			KB.start();
+			propagKB.start();
+			GA.start();
+			propagGA.start();
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
