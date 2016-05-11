@@ -25,18 +25,71 @@ td5:Jeanne a foaf:Person;
 	foaf:firstName "Jeanne".
 td5:Thomas a foaf:Person;
 	foaf:firstName "Thomas".
+td5:Chris a foaf:Person;
+	foaf:firstName "Chris".
+td5:Fanny a foaf:Person;
+	foaf:firstName "Fanny".
+td5:Manon a foaf:Person;
+	foaf:firstName "Manon".
+td5:Marion a foaf:Person;
+	foaf:firstName "Marion".
+td5:Tom a foaf:Person;
+	foaf:firstName "Tom".
+td5:Xavier a foaf:Person;
+	foaf:firstName "Xavier".
 
-td5:Jeoffrey foaf:knows td5:Clarisse.
+td5:Jeoffrey foaf:knows td5:Clarisse,
+					td5:Thomas.
 td5:Sarah foaf:knows td5:Thomas.
-td5:Jeanne foaf:knows td5:_Jean.
+td5:Jeanne foaf:knows td5:Jean.
 td5:Thomas foaf:knows td5:Clarisse,
 					td5:Sarah.
-
+td5:Jeanne foaf:knows td5:Jean,
+					td5:Sarah.
+td5:Chris foaf:knows td5:Jean.
+td5:Marion foaf:knows td5:Clarisse,
+					td5:Manon.
+td5:Xavier foaf:knows td5:Jean.
+td5:Tom foaf:knows td5:Xavier,
+					td5:Arthur,
+					td5:Fanny.
+td5:Manon foaf:knows td5:Tom,
+					td5:Jeoffrey.
+td5:Clarisse foaf:knows td5:Arthur,
+					td5:Jeanne.
+td5:Arthur foaf:knows td5:Tom,
+					td5:Jeoffrey.
+td5:Fanny foaf:knows td5:Tom,
+					td5:Jeoffrey,
+					td5:Manon,
+					td5:Sarah.
+							
 td5:Sarah foaf:topic_interest td5:UTC.
 td5:Thomas foaf:topic_interest td5:UTC.
 td5:Clarisse foaf:topic_interest td5:Thomas.
+td5:Jean foaf:topic_interest td5:Thomas.
+td5:Arthur foaf:topic_interest td5:UTC.
+td5:Jeoffrey foaf:topic_interest td5:Jean.
+td5:Jeanne foaf:topic_interest td5:Clarisse.
+td5:Chris foaf:topic_interest td5:UTC.
+td5:Fanny foaf:topic_interest td5:UTC.
+td5:Manon foaf:topic_interest td5:Tom.
+td5:Marion foaf:topic_interest td5:Tom.
+td5:Tom foaf:topic_interest td5:UTC.
+td5:Xavier foaf:topic_interest td5:UTC.
 
 
-td5:pyg foaf:topic_interest geo:node424297629.
-td5:pyg foaf:topic_interest geo:node424313751.
-td5:pyg foaf:topic_interest geo:node424314784.
+td5:Jeanne foaf:topic_interest geo:node424297629.
+td5:Chris foaf:topic_interest geo:node424313751.
+td5:Marion foaf:topic_interest geo:node424314784.
+td5:Sarah foaf:topic_interest geo:node249399280.
+td5:Thomas foaf:topic_interest geo:node249399280.
+td5:Clarisse foaf:topic_interest geo:node424297629.
+td5:Jean foaf:topic_interest geo:node424297629.
+td5:Arthur foaf:topic_interest geo:node249399285.
+td5:Jeoffrey foaf:topic_interest geo:node249399280.
+td5:Fanny foaf:topic_interest geo:node249399285.
+td5:Manon foaf:topic_interest geo:node249399313.
+td5:Tom foaf:topic_interest geo:node249399364.
+td5:Xavier foaf:topic_interest geo:node249399406.
+

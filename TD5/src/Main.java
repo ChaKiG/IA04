@@ -22,7 +22,6 @@ public class Main {
 		//Etape 2
 		BaseExterieur.query("requestExterieurPays");
 		*/
-		
 		//Etape 3
 		String MAIN_PROPERTIES_FILE = "main_properties";
 		String SEC_PROPERTIES_FILE = "sec_properties";

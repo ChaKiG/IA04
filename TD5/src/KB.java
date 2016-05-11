@@ -1,10 +1,4 @@
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -36,49 +30,43 @@ public class KB extends Agent {
 		}
 	}
 	
-	
-	/*public class Listen extends Behaviour {
-		private static final long serialVersionUID = 10L;
-
-		public void action() {
-			ACLMessage message = null;
-			message = receive();
-			if (message != null) {
-				String queryString = message.getContent();
-				runSelectQuery(queryString);
-			}
-		}
-		
-		public boolean done() {
-			return false;
-		}
-		*/
-	
 	public class Request extends Behaviour {
-		private int state;
-		private String uniqueID;
-	
+		private static final long serialVersionUID = 1L;
+		//private int state;
+		//private String uniqueID;
+		
+		
 		private Request() {
-			state = 0;
-			uniqueID = UUID.randomUUID().toString();
+			//state = 0;
+			//uniqueID = UUID.randomUUID().toString();
 		}
 		
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
 			ACLMessage message = receive(mt);
-			OperationResult mes = null;
+			SparqlRequest mes = null;
 			if (message != null) {
 				try {
 					ObjectMapper mapper = new ObjectMapper();
-					mes = mapper.readValue(message.getContent(), OperationResult.class);
-					Query query = QueryFactory.create(mes.getRequest()); 
+					mes = mapper.readValue(message.getContent(), SparqlRequest.class);
+					Query query = QueryFactory.create(mes.transformRequest()); 
 					QueryExecution queryExecution = QueryExecutionFactory.create(query, model); 
-					ResultSet r = queryExecution.execSelect(); 
-					ResultSetFormatter.out(System.out,r); 
+					ResultSet r = queryExecution.execSelect();
+					
+					System.out.println("KB received request, executing...");
+					
+					ACLMessage response = message.createReply();
+					response.setPerformative(ACLMessage.INFORM);
+					response.setContent(ResultSetFormatter.asText(r));
+					send(response);
 					queryExecution.close(); 
 				}
 				catch (Exception e) {
-				System.out.println("Mauvais message reÃ§u : " + mes.getRequest());
+					if (mes != null)
+						System.out.println("Mauvais message reçu : " + mes.transformRequest());
+					else
+						System.out.println("Erreur : " + message.getContent());
+					e.printStackTrace();
 				}
 			}
 			
