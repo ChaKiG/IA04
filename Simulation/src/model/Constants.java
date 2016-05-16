@@ -2,7 +2,7 @@ package model;
 
 public class Constants {
 	public static final Integer 	GRID_SIZE 	= 30;			//largeur de la grille  
-	public static final Integer 	NUM_INSECT 	= 10;			//nombre initial d'insectes  
+	public static final Integer 	NUM_INSECT 	= 20;			//nombre initial d'insectes  
 	public static final Integer 	NUM_FOOD_CELL = 15;			//nombre de cellules avec nourriture 
 	public static final Integer 	MAX_ENERGY 	= 15;			//maximum d'énergie d'un insecte 
 	public static final Integer 	MAX_LOAD	= 5;			//charge maximale d'un insecte 

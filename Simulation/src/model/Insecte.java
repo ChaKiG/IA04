@@ -33,6 +33,10 @@ public class Insecte implements Steppable {
 		DISTANCE_PERCEPTION += nb2;
 		DISTANCE_DEPLACEMENT += nb;
 		
+		
+		System.out.println("percois : " + DISTANCE_PERCEPTION);
+		System.out.println("deplace : " + DISTANCE_DEPLACEMENT);
+		System.out.println("charge : " + CHARGE_MAX);
 	}
 	
 	
@@ -53,7 +57,7 @@ public class Insecte implements Steppable {
 				return;
 			if (charger(perception))
 				return;
-			move(perception);
+			move(perception, insectes);
 		}
 	}
     
@@ -62,7 +66,7 @@ public class Insecte implements Steppable {
     	for (int i = 0-DISTANCE_PERCEPTION; i <= DISTANCE_PERCEPTION; i++) {
     		for (int j = 0-DISTANCE_PERCEPTION; j <= DISTANCE_PERCEPTION; j++) {
         		Bag b = insectes.yard.getObjectsAtLocation(x+i, y+j);
-        		if (!b.isEmpty()) {
+        		if ( b != null && !b.isEmpty()) {
         			for (Object o : b) {
         				if (o.getClass() == Food.class) {
         					l.add((Food) o);
@@ -70,24 +74,28 @@ public class Insecte implements Steppable {
     				}
     			}
     		}
-    	}	
+    	}
+    	System.out.println("insecte percois " + l.size() + " food");
     	return l;
     }
     
     private boolean manger(List<Food> l) {
-		if (energie <= Constants.MAX_ENERGY - Constants.FOOD_ENERGY && (charge >= 1 || !l.isEmpty())) {
-			if (charge >= 1) {
-	    		this.charge--;
-	        	this.energie += Constants.FOOD_ENERGY;
-				return true;
-			}
+		if ( ( energie <= Constants.MAX_ENERGY - Constants.FOOD_ENERGY && charge == this.CHARGE_MAX)
+			 || ( energie <= 2 &&(charge >= 1 || !l.isEmpty())) ) {
 			for (Food f : l) {
 				if (getDistance(f.getX(), f.getY()) == 1) {
 		    		if (f.removeFood()) {
 			        	this.energie += Constants.FOOD_ENERGY;
+			        	System.out.println("manger food a cote");
 						return true;
 		    		}
 				}
+			}
+			if (charge >= 1) {
+	    		this.charge--;
+	        	this.energie += Constants.FOOD_ENERGY;
+	        	System.out.println("manger food charge");
+				return true;
 			}
 		}
 		return false;
@@ -99,6 +107,7 @@ public class Insecte implements Steppable {
 				if (getDistance(f.getX(), f.getY()) == 0) {
 		    		if (f.removeFood()) {
 			        	this.charge++;
+			        	System.out.println("charger");
 						return true;
 		    		}
 				}
@@ -107,8 +116,132 @@ public class Insecte implements Steppable {
     	return false;
     }
     
-    private void move(List<Food> l) {
-    	
+    private void move(List<Food> l, Insectes insectes) {
+    	System.out.println("deplacer");
+    	boolean d = false;
+    	int s = Constants.GRID_SIZE;
+    	if (!l.isEmpty()) {
+			Food bestC = l.get(0);
+	    	Food bestM = l.get(0);
+	    	for (Food f : l) {
+				if (getDistance(f.getX(), f.getY()) == 0) {
+		    		if (f.getNbFood() > bestC.getNbFood() && getDistance(f.getX(), f.getY()) <= this.DISTANCE_DEPLACEMENT) {
+		    			bestC = f;
+		    		}
+		    		if (f.getNbFood() > bestM.getNbFood() && getDistance(f.getX(), f.getY()) <= this.DISTANCE_DEPLACEMENT+1) {
+		    			bestM = f;
+		    		}
+				}
+			}
+	    	if (this.energie <= 2) {
+	        	System.out.println("deplacer pour manger");
+	    		//aller a cote de la case bestM pour manger au prochain tour
+	    		if (bestM.getX() > 0 && getDistance(bestM.getX()-1, bestM.getY()) <= this.DISTANCE_DEPLACEMENT) {
+	    			x = bestM.getX() - 1;
+	    			y = bestM.getY();
+	    			insectes.yard.setObjectLocation(this, x, y);
+	    			d = true;
+	    		}
+	    		else if (bestM.getX() < s-1 && getDistance(bestM.getX()+1, bestM.getY()) <= this.DISTANCE_DEPLACEMENT) {
+	    			x = bestM.getX() + 1;
+	    			y = bestM.getY();
+	    			insectes.yard.setObjectLocation(this, x, y);
+	    			d = true;
+	    		}
+	    		else if (bestM.getY() > 0 && getDistance(bestM.getX(), bestM.getY()-1) <= this.DISTANCE_DEPLACEMENT) {
+	    			x = bestM.getX();
+	    			y = bestM.getY() - 1;
+	    			insectes.yard.setObjectLocation(this, x, y);
+	    			d = true;
+	    		}
+	    		else if (bestM.getY() < s-1 && getDistance(bestM.getX(), bestM.getY()+1) <= this.DISTANCE_DEPLACEMENT) {
+	    			x = bestM.getX();
+	    			y = bestM.getY() + 1;
+	    			insectes.yard.setObjectLocation(this, x, y);
+	    			d = true;
+	    		}
+	    	} else {
+    	    	System.out.println("deplacer pour charger");
+	    		// aller sur la case bestC pour charger au prochain tour
+    			x = bestC.getX();
+    			y = bestC.getY();
+    			insectes.yard.setObjectLocation(this, x, y);
+				d = true;
+	    	}
+    	}
+    	if (d == false) {
+	    	System.out.println("deplacer no food");
+	    	int nb = 0;
+	    	int dir = 0;
+	    	while (d == false) {
+	    		dir = insectes.random.nextInt(8);
+	    		nb = insectes.random.nextInt(this.DISTANCE_DEPLACEMENT) + 1;
+	    		
+				switch(dir) {
+				case 0:
+					if (x - nb >= 0 && y - nb >= 0) {
+						x = x - nb;
+						y = y - nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 1:
+					if (y - nb >= 0) {
+						y = y - nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 2:
+					if (x + nb < s && y - nb >= 0) {
+						x = x + nb;
+						y = y - nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 3:
+					if (x + nb < s) {
+						x = x + nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 4:
+					if (x + nb < s && y + nb < s) {
+						x = x + nb;
+						y = y + nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 5:
+					if ( y + nb < s) {
+						y = y + nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 6:
+					if ( x - nb >= 0 && y + nb < s) {
+						x = x - nb;
+						y = y + nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				case 7:
+					if ( x - nb >= 0 ) {
+						x = x - nb;
+						insectes.yard.setObjectLocation(this, x, y);
+						d = true;
+					}
+					break;
+				}
+	    	}
+    	}
+    	energie = energie - 1;
     }
     
     
@@ -119,255 +252,4 @@ public class Insecte implements Steppable {
     	int dy = Math.abs(this.y - y);
     	return Math.max(dx, dy);
     }
-    
-    
-    /*
-  protected int friendsNum(Beings beings) {
-	return friendsNum(beings,x,y);
- }
-  protected int friendsNum(Beings beings,int l,int c) {
-		int nb = 0;
-	    for (int i = -1 ; i <= 1 ; i++) {
-	    for (int j = -1 ; j <= 1 ; j++) {
-	      if (i != 0 || j != 0) {
-	    	  Int2D flocation = new Int2D(beings.yard.stx(l + i),beings.yard.sty(c + j));
-	    	  Object ag = beings.yard.get(flocation.x,flocation.y);
-	          if (ag != null) {
-	        	  if (ag.getClass() == this.getClass())
-	        		  nb++;
-	          }
-	      }
-	    }
-	  }
-	  return nb;
-	 }
-  
-  public boolean move(Beings beings) {
-	boolean done = false;
-	int n = beings.random.nextInt(Beings.NB_DIRECTIONS);
-	switch(n) {
-	case 0: 
-		if (beings.free(x-1, y) 
-	         && friendsNum(beings,x-1,y) >= LEVEL) {
-		 beings.yard.set(x, y, null);
-		 beings.yard.set(beings.yard.stx(x-1), y, this);
-		 x = beings.yard.stx(x-1);
-		 done = true;
-		}
-		break;
-	case 1:
-		if (beings.free(x+1, y) && friendsNum(beings,x+1,y) >= LEVEL) {
-		 beings.yard.set(x, y, null);
-		 beings.yard.set(beings.yard.stx(x+1), y, this);
-		 x = beings.yard.stx(x+1);
-		 done = true;
-	    }
-		break;
-	case 2:
-		if (beings.free(x, y-1) && friendsNum(beings,x,y-1) >= LEVEL) {
-			beings.yard.set(x, y, null);
-			beings.yard.set(x, beings.yard.sty(y-1), this);
-			y = beings.yard.sty(y-1);
-			done = true;
-		}
-		break;
-	case 3: 
-		if (beings.free(x, y+1) && friendsNum(beings,x,y+1) >= LEVEL) {
-			beings.yard.set(x, y, null);
-			beings.yard.set(x, beings.yard.sty(y+1), this);
-			y = beings.yard.sty(y+1);
-			done = true;
-		}
-		break;
-	case 4:
-		if (beings.free(x-1, y-1) && friendsNum(beings,x-1,y-1) >= LEVEL) {
-			beings.yard.set(x, y, null);
-			beings.yard.set(beings.yard.stx(x-1), beings.yard.sty(y-1), this);
-			x = beings.yard.stx(x-1);
-			y = beings.yard.sty(y-1);
-			done = true;
-		}
-		break;
-	case 5:
-		if (beings.free(x+1, y-1) && friendsNum(beings,x+1,y-1) >= LEVEL) {
-			beings.yard.set(x, y, null);
-			beings.yard.set(beings.yard.stx(x+1), beings.yard.sty(y-1), this);
-			x = beings.yard.stx(x+1);
-			y = beings.yard.sty(y-1);
-			done = true;
-		}
-		break;
-	case 6:
-		if (beings.free(x+1, y+1) && friendsNum(beings,x+1,y+1) >= LEVEL) {
-			beings.yard.set(x, y, null);
-			beings.yard.set(beings.yard.stx(x+1), beings.yard.sty(y+1), this);
-			x = beings.yard.stx(x+1);
-			y = beings.yard.sty(y+1);
-			done = true;
-		}
-		break;
-	case 7:
-		if (beings.free(x-1, y+1) && friendsNum(beings,x-1,y+1) >= LEVEL) {
-			beings.yard.set(x, y, null);
-			beings.yard.set(beings.yard.stx(x-1), beings.yard.sty(y+1), this);
-			x = beings.yard.stx(x-1);
-			y = beings.yard.sty(y+1);
-			done = true;
-		}
-		break;
-	}
-	return done;
- }
-  public boolean move2(Beings beings) {
-		boolean done = false;
-			int n = beings.random.nextInt(Beings.NB_DIRECTIONS);
-			switch(n) {
-			case 0: 
-				if (beings.free(x-1, y)) {
-				 beings.yard.set(x, y, null);
-				 beings.yard.set(beings.yard.stx(x-1), y, this);
-				 x = beings.yard.stx(x-1);
-				 done = true;
-				}
-				break;
-			case 1:
-				if (beings.free(x+1, y)) {
-				 beings.yard.set(x, y, null);
-				 beings.yard.set(beings.yard.stx(x+1), y, this);
-				 x = beings.yard.stx(x+1);
-				 done = true;
-			    }
-				break;
-			case 2:
-				if (beings.free(x, y-1)) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(x, beings.yard.sty(y-1), this);
-					y = beings.yard.sty(y-1);
-					done = true;
-				}
-				break;
-			case 3: 
-				if (beings.free(x, y+1)) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(x, beings.yard.sty(y+1), this);
-					y = beings.yard.sty(y+1);
-					done = true;
-				}
-				break;
-			case 4:
-				if (beings.free(x-1, y-1)) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x-1), beings.yard.sty(y-1), this);
-					x = beings.yard.stx(x-1);
-					y = beings.yard.sty(y-1);
-					done = true;
-				}
-				break;
-			case 5:
-				if (beings.free(x+1, y-1)) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x+1), beings.yard.sty(y-1), this);
-					x = beings.yard.stx(x+1);
-					y = beings.yard.sty(y-1);
-					done = true;
-				}
-				break;
-			case 6:
-				if (beings.free(x+1, y+1)) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x+1), beings.yard.sty(y+1), this);
-					x = beings.yard.stx(x+1);
-					y = beings.yard.sty(y+1);
-					done = true;
-				}
-				break;
-			case 7:
-				if (beings.free(x-1, y+1)) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x-1), beings.yard.sty(y+1), this);
-					x = beings.yard.stx(x-1);
-					y = beings.yard.sty(y+1);
-					done = true;
-				}
-				break;
-			}
-		return done;
-	 }
-  public boolean tryMove(Beings beings,int f) {
-		boolean done = false;
-			int n = beings.random.nextInt(Beings.NB_DIRECTIONS);
-			switch(n) {
-			case 0: 
-				if (beings.free(x-1, y) && friendsNum(beings,x-1,y) > f) {
-				 beings.yard.set(x, y, null);
-				 beings.yard.set(beings.yard.stx(x-1), y, this);
-				 x = beings.yard.stx(x-1);
-				 done = true;
-				}
-				break;
-			case 1:
-				if (beings.free(x+1, y) && friendsNum(beings,x+1,y) > f) {
-				 beings.yard.set(x, y, null);
-				 beings.yard.set(beings.yard.stx(x+1), y, this);
-				 x = beings.yard.stx(x+1);
-				 done = true;
-			    }
-				break;
-			case 2:
-				if (beings.free(x, y-1)  && friendsNum(beings,x,y-1) > f) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(x, beings.yard.sty(y-1), this);
-					y = beings.yard.sty(y-1);
-					done = true;
-				}
-				break;
-			case 3: 
-				if (beings.free(x, y+1)  && friendsNum(beings,x,y+1) > f) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(x, beings.yard.sty(y+1), this);
-					y = beings.yard.sty(y+1);
-					done = true;
-				}
-				break;
-			case 4:
-				if (beings.free(x-1, y-1)  && friendsNum(beings,x-1,y-1) > f) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x-1), beings.yard.sty(y-1), this);
-					x = beings.yard.stx(x-1);
-					y = beings.yard.sty(y-1);
-					done = true;
-				}
-				break;
-			case 5:
-				if (beings.free(x+1, y-1)  && friendsNum(beings,x+1,y-1) > f) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x+1), beings.yard.sty(y-1), this);
-					x = beings.yard.stx(x+1);
-					y = beings.yard.sty(y-1);
-					done = true;
-				}
-				break;
-			case 6:
-				if (beings.free(x+1, y+1)  && friendsNum(beings,x+1,y+1) > f) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x+1), beings.yard.sty(y+1), this);
-					x = beings.yard.stx(x+1);
-					y = beings.yard.sty(y+1);
-					done = true;
-				}
-				break;
-			case 7:
-				if (beings.free(x-1, y+1) && friendsNum(beings,x-1,y+1) > f) {
-					beings.yard.set(x, y, null);
-					beings.yard.set(beings.yard.stx(x-1), beings.yard.sty(y+1), this);
-					x = beings.yard.stx(x-1);
-					y = beings.yard.sty(y+1);
-					done = true;
-				}
-				break;
-			}
-		return done;
-	 }
-	
-	*/
 }
