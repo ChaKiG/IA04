@@ -2,7 +2,6 @@ package model;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
-import sim.engine.Stoppable;
 import sim.util.Bag;
 
 import java.util.ArrayList;
@@ -46,19 +45,28 @@ public class Insecte implements Steppable {
     @Override
 	public void step(SimState state) {
 		Insectes insectes = (Insectes) state;
+
+		System.out.println("debut tour : ");
+		System.out.println("energie : " + this.energie);
+		System.out.println("charge : " + this.charge);
 		
 		if (this.energie == 0) {
+			this.energie = -1;
 			insectes.yard.remove(this);
-			insectes.schedule.scheduleRepeating(this).stop(); 
-		} else {
+			insectes.schedule.scheduleRepeating(this).stop();
+			System.out.println("insecte meurt");
+			insectes.tuerInsecte(this);
+		} else if (this.energie > 0){
 			List<Food> perception = percevoir(insectes);
 			
-			if (manger(perception))
-				return;
-			if (charger(perception))
-				return;
-			move(perception, insectes);
-		}
+			System.out.println("insecte percois " + perception.size() + " food");
+			
+			if ( !manger(perception) && !charger(perception) )
+				move(perception, insectes);
+			//System.out.println("fin tour : ");
+			//System.out.println("energie : " + this.energie);
+			//System.out.println("charge : " + this.charge + "\n\n\n");
+    	}
 	}
     
     private List<Food> percevoir(Insectes insectes) {
@@ -75,13 +83,11 @@ public class Insecte implements Steppable {
     			}
     		}
     	}
-    	System.out.println("insecte percois " + l.size() + " food");
     	return l;
     }
     
     private boolean manger(List<Food> l) {
-		if ( ( energie <= Constants.MAX_ENERGY - Constants.FOOD_ENERGY && charge == this.CHARGE_MAX)
-			 || ( energie <= 2 &&(charge >= 1 || !l.isEmpty())) ) {
+		if ( energie <= Constants.MAX_ENERGY - Constants.FOOD_ENERGY ) {
 			for (Food f : l) {
 				if (getDistance(f.getX(), f.getY()) == 1) {
 		    		if (f.removeFood()) {
@@ -102,14 +108,16 @@ public class Insecte implements Steppable {
     }
     
     private boolean charger(List<Food> l) {
-    	if (charge < this.CHARGE_MAX && !l.isEmpty()) {
+    	if (charge < this.CHARGE_MAX) {
 			for (Food f : l) {
 				if (getDistance(f.getX(), f.getY()) == 0) {
-		    		if (f.removeFood()) {
-			        	this.charge++;
+					System.out.println("nb food sur place : " + f.getNbFood());
+					if ( f.removeFood() ) {
+			        	System.out.println("ok");
+						this.charge++;
 			        	System.out.println("charger");
 						return true;
-		    		}
+					}
 				}
 			}
     	}
@@ -117,66 +125,66 @@ public class Insecte implements Steppable {
     }
     
     private void move(List<Food> l, Insectes insectes) {
-    	System.out.println("deplacer");
+    	//System.out.println("deplacer");
     	boolean d = false;
     	int s = Constants.GRID_SIZE;
+		Food bestC = null;
+    	Food bestM = null;
     	if (!l.isEmpty()) {
-			Food bestC = l.get(0);
-	    	Food bestM = l.get(0);
+    		int dist = 0;
+    		bestC = l.get(0);
+    		bestM = l.get(0);
 	    	for (Food f : l) {
-				if (getDistance(f.getX(), f.getY()) == 0) {
-		    		if (f.getNbFood() > bestC.getNbFood() && getDistance(f.getX(), f.getY()) <= this.DISTANCE_DEPLACEMENT) {
-		    			bestC = f;
-		    		}
-		    		if (f.getNbFood() > bestM.getNbFood() && getDistance(f.getX(), f.getY()) <= this.DISTANCE_DEPLACEMENT+1) {
-		    			bestM = f;
-		    		}
-				}
+	    		dist = getDistance(f.getX(), f.getY());
+	    		if (dist > 0 && dist <= this.DISTANCE_DEPLACEMENT && f.getNbFood() > bestC.getNbFood() )
+	    			bestC = f;
+	    		if (dist > 0 && dist <= this.DISTANCE_DEPLACEMENT + 1 && f.getNbFood() > bestM.getNbFood() )
+	    			bestM = f;
 			}
-	    	if (this.energie <= 2) {
-	        	System.out.println("deplacer pour manger");
-	    		//aller a cote de la case bestM pour manger au prochain tour
-	    		if (bestM.getX() > 0 && getDistance(bestM.getX()-1, bestM.getY()) <= this.DISTANCE_DEPLACEMENT) {
-	    			x = bestM.getX() - 1;
-	    			y = bestM.getY();
-	    			insectes.yard.setObjectLocation(this, x, y);
-	    			d = true;
-	    		}
-	    		else if (bestM.getX() < s-1 && getDistance(bestM.getX()+1, bestM.getY()) <= this.DISTANCE_DEPLACEMENT) {
-	    			x = bestM.getX() + 1;
-	    			y = bestM.getY();
-	    			insectes.yard.setObjectLocation(this, x, y);
-	    			d = true;
-	    		}
-	    		else if (bestM.getY() > 0 && getDistance(bestM.getX(), bestM.getY()-1) <= this.DISTANCE_DEPLACEMENT) {
-	    			x = bestM.getX();
-	    			y = bestM.getY() - 1;
-	    			insectes.yard.setObjectLocation(this, x, y);
-	    			d = true;
-	    		}
-	    		else if (bestM.getY() < s-1 && getDistance(bestM.getX(), bestM.getY()+1) <= this.DISTANCE_DEPLACEMENT) {
-	    			x = bestM.getX();
-	    			y = bestM.getY() + 1;
-	    			insectes.yard.setObjectLocation(this, x, y);
-	    			d = true;
-	    		}
-	    	} else {
-    	    	System.out.println("deplacer pour charger");
-	    		// aller sur la case bestC pour charger au prochain tour
-    			x = bestC.getX();
-    			y = bestC.getY();
-    			insectes.yard.setObjectLocation(this, x, y);
-				d = true;
-	    	}
     	}
-    	if (d == false) {
-	    	System.out.println("deplacer no food");
+    	if ( bestM != null && this.energie <= 2) {
+    		System.out.println("deplacer pour manger");
+    		//aller a cote de la case bestM pour manger au prochain tour
+    		if (bestM.getX() > 0 && getDistance(bestM.getX()-1, bestM.getY()) <= this.DISTANCE_DEPLACEMENT) {
+    			x = bestM.getX() - 1;
+    			y = bestM.getY();
+    			insectes.yard.setObjectLocation(this, x, y);
+    			d = true;
+    		}
+    		else if (bestM.getX() < s-1 && getDistance(bestM.getX()+1, bestM.getY()) <= this.DISTANCE_DEPLACEMENT) {
+    			x = bestM.getX() + 1;
+    			y = bestM.getY();
+    			insectes.yard.setObjectLocation(this, x, y);
+    			d = true;
+    		}
+    		else if (bestM.getY() > 0 && getDistance(bestM.getX(), bestM.getY()-1) <= this.DISTANCE_DEPLACEMENT) {
+    			x = bestM.getX();
+    			y = bestM.getY() - 1;
+    			insectes.yard.setObjectLocation(this, x, y);
+    			d = true;
+    		}
+    		else if (bestM.getY() < s-1 && getDistance(bestM.getX(), bestM.getY()+1) <= this.DISTANCE_DEPLACEMENT) {
+    			x = bestM.getX();
+    			y = bestM.getY() + 1;
+    			insectes.yard.setObjectLocation(this, x, y);
+    			d = true;
+    		}
+    	}
+    	if ( bestC != null && d == false) {
+	    	System.out.println("deplacer pour charger");
+    		// aller sur la case bestC pour charger au prochain tour
+			x = bestC.getX();
+			y = bestC.getY();
+			insectes.yard.setObjectLocation(this, x, y);
+			d = true;
+    	}
+		if (d == false) {
+	    	//System.out.println("deplacer aléatoire");
 	    	int nb = 0;
 	    	int dir = 0;
 	    	while (d == false) {
-	    		dir = insectes.random.nextInt(8);
-	    		nb = insectes.random.nextInt(this.DISTANCE_DEPLACEMENT) + 1;
-	    		
+	    		dir = insectes.random.nextInt(4);
+	    		nb = Math.min(this.DISTANCE_PERCEPTION + 2, this.DISTANCE_DEPLACEMENT);
 				switch(dir) {
 				case 0:
 					if (x - nb >= 0 && y - nb >= 0) {
@@ -187,13 +195,6 @@ public class Insecte implements Steppable {
 					}
 					break;
 				case 1:
-					if (y - nb >= 0) {
-						y = y - nb;
-						insectes.yard.setObjectLocation(this, x, y);
-						d = true;
-					}
-					break;
-				case 2:
 					if (x + nb < s && y - nb >= 0) {
 						x = x + nb;
 						y = y - nb;
@@ -201,14 +202,7 @@ public class Insecte implements Steppable {
 						d = true;
 					}
 					break;
-				case 3:
-					if (x + nb < s) {
-						x = x + nb;
-						insectes.yard.setObjectLocation(this, x, y);
-						d = true;
-					}
-					break;
-				case 4:
+				case 2:
 					if (x + nb < s && y + nb < s) {
 						x = x + nb;
 						y = y + nb;
@@ -216,28 +210,13 @@ public class Insecte implements Steppable {
 						d = true;
 					}
 					break;
-				case 5:
-					if ( y + nb < s) {
-						y = y + nb;
-						insectes.yard.setObjectLocation(this, x, y);
-						d = true;
-					}
-					break;
-				case 6:
+				case 3:
 					if ( x - nb >= 0 && y + nb < s) {
 						x = x - nb;
 						y = y + nb;
 						insectes.yard.setObjectLocation(this, x, y);
 						d = true;
 					}
-					break;
-				case 7:
-					if ( x - nb >= 0 ) {
-						x = x - nb;
-						insectes.yard.setObjectLocation(this, x, y);
-						d = true;
-					}
-					break;
 				}
 	    	}
     	}

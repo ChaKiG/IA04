@@ -12,14 +12,23 @@ public class Food implements Steppable {
 	private int nbFood = Constants.MAX_FOOD;
 	
 	public Food(int x, int y) {
+		super();
 		this.x = x;
 		this.y = y;
 	}
-	
-	public void step(SimState step) {
-		Insectes i = (Insectes) step;
-		if (nbFood == 0) {
-			i.relocateFood(this);
+
+    @Override
+	public void step(SimState state) {
+		Insectes i = (Insectes) state;
+		if (nbFood <= 0) {
+			nbFood = Constants.MAX_FOOD;
+			Int2D pos = i.getNewPos();
+			System.out.println("rellocating food ");
+			System.out.println("old " + x + " / " + y);
+			System.out.println("new " + pos.getX() + " / " + pos.getY());
+			this.x = pos.x;
+			this.y = pos.y;
+			i.yard.setObjectLocation(this, pos);
 		}
 	}
 	
@@ -34,12 +43,5 @@ public class Food implements Steppable {
 			return true;
 		}
 		return false;
-	}
-	
-	
-	public void newFood(Int2D pos) {
-		this.x = pos.x;
-		this.y = pos.y;
-		this.nbFood = Constants.MAX_FOOD;	
 	}
 }

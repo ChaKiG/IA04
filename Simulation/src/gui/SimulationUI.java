@@ -1,13 +1,6 @@
 package gui;
 
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.TexturePaint;
-import java.awt.image.BufferedImage;
-
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 import sim.display.Controller;
@@ -15,9 +8,10 @@ import sim.display.Display2D;
 import sim.display.GUIState;
 import sim.engine.SimState;
 import sim.portrayal.Inspector;
-import sim.portrayal.grid.ObjectGridPortrayal2D;
 import sim.portrayal.grid.SparseGridPortrayal2D;
+import sim.portrayal.simple.LabelledPortrayal2D;
 import sim.portrayal.simple.OvalPortrayal2D;
+import sim.util.Bag;
 import model.Insectes;
 import model.Insecte;
 import model.Food;
@@ -46,18 +40,32 @@ public class SimulationUI extends GUIState {
 	
 	public void setupPortrayals() {
 		Insectes beings = (Insectes) state;	
-	  yardPortrayal.setField(beings.yard );
-	  yardPortrayal.setPortrayalForClass(Insecte.class, getInsectePortrayal());
-	  yardPortrayal.setPortrayalForClass(Food.class, getFoodPortrayal());
-	  display.reset();
-	  display.setBackdrop(Color.orange);
-	  display.repaint();
+		yardPortrayal.setField(beings.yard );
+		Bag b = beings.yard.allObjects;
+		for (Object o : b) {
+			if (o.getClass() == Food.class)
+				yardPortrayal.setPortrayalForObject(o, getFoodPortrayal());
+			else if (o.getClass() == Insecte.class) {
+				Insecte i = (Insecte) o;
+				yardPortrayal.setPortrayalForObject(o, getInsectePortrayal(i.x, i.y)); 
+			}
+			
+		}
+		display.reset();
+		display.setBackdrop(Color.orange);
+		display.repaint();
 	}
-	private OvalPortrayal2D getInsectePortrayal() {
+	
+	private LabelledPortrayal2D getInsectePortrayal(int x, int y) {
 		OvalPortrayal2D r = new OvalPortrayal2D();
 		r.paint = Color.BLACK;
 		r.filled = true;
-		return r;
+		r.scale = 0.5;
+		
+		Insectes beings = (Insectes) state;
+		int nb = beings.yard.getObjectsAtLocation(x,  y).size();
+		LabelledPortrayal2D d = new LabelledPortrayal2D(r, String.valueOf(nb));
+		return d;
 	}
 	private OvalPortrayal2D getFoodPortrayal() {
 		OvalPortrayal2D r = new OvalPortrayal2D();
