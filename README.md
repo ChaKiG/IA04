@@ -1,5 +1,8 @@
 # IA04
-IA04 TDs/Projet
+IA04 : Systèmes multi-agents
+
+Ce cours dispensé à l'UTC présente les bases des systèmes multi-agents, distribués ou non.
+Le langage principalement utilisé est JAVA.
 
 ## Dependances :
 ######IDE : 
